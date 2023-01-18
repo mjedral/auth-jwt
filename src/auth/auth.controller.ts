@@ -4,12 +4,15 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
 import { Tokens } from './types';
 import { AuthGuard } from '@nestjs/passport';
+import { GetCurrentUserId } from 'src/common/decorators/GetCurrentUserId';
 
 @Controller('auth')
 export class AuthController {
@@ -30,7 +33,7 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(userId: number) {
+  logout(@GetCurrentUserId() userId: number) {
     return this.authService.logout(userId);
   }
 
