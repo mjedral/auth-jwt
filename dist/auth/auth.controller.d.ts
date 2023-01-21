@@ -5,7 +5,7 @@ export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
     signupLocal(dto: AuthDto): Promise<Tokens>;
-    signinLocal(): void;
-    logout(): void;
-    refreshTokens(): void;
+    signinLocal(dto: AuthDto): Promise<Tokens>;
+    logout(userId: number): Promise<void>;
+    refreshTokens(userId: number, refreshToken: string): Promise<Tokens>;
 }

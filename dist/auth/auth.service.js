@@ -67,9 +67,47 @@ let AuthService = class AuthService {
             },
         });
     }
-    signinLocal() { }
-    logout() { }
-    refreshTokens() { }
+    async signinLocal(dto) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                email: dto.email,
+            },
+        });
+        const passwordMatches = await bcrypt.compare(dto.password, user.hash);
+        if (!user || !passwordMatches)
+            throw new common_1.ForbiddenException('Access Denied!');
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
+        return tokens;
+    }
+    async logout(userId) {
+        await this.prisma.user.updateMany({
+            where: {
+                id: userId,
+                hashedRt: {
+                    not: null,
+                },
+            },
+            data: {
+                hashedRt: null,
+            },
+        });
+    }
+    async refreshTokens(userId, rt) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+        if (!user || !user.hashedRt)
+            throw new common_1.ForbiddenException('Access Denied');
+        const rtMatches = await bcrypt.compare(user.hashedRt, rt);
+        if (!rtMatches)
+            throw new common_1.ForbiddenException('Access Denied');
+        const tokens = await this.getTokens(user.id, user.email);
+        await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
+        return tokens;
+    }
 };
 AuthService = __decorate([
     (0, common_1.Injectable)(),

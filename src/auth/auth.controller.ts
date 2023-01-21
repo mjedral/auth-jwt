@@ -4,26 +4,29 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   UseGuards,
-  Request,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { GetCurrentUser } from 'src/common/decorators/GetCurrentUser.decorator';
+import { GetCurrentUserId } from 'src/common/decorators/GetCurrentUserId.decorator';
+import { Public } from 'src/common/decorators/Public.decorator';
+import { RtGuard } from 'src/common/guards';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
 import { Tokens } from './types';
-import { AuthGuard } from '@nestjs/passport';
-import { GetCurrentUserId } from 'src/common/decorators/GetCurrentUserId';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Post('/local/signup')
   @HttpCode(HttpStatus.CREATED)
   signupLocal(@Body() dto: AuthDto): Promise<Tokens> {
     return this.authService.signupLocal(dto);
   }
 
+  @Public()
   @Post('/local/signin')
   @HttpCode(HttpStatus.OK)
   signinLocal(@Body() dto: AuthDto): Promise<Tokens> {
@@ -37,10 +40,14 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @Public()
+  @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens() {
-    return this.authService.refreshTokens();
+  refreshTokens(
+    @GetCurrentUserId() userId: number,
+    @GetCurrentUser('refreshToken') refreshToken: string,
+  ): Promise<Tokens> {
+    return this.authService.refreshTokens(userId, refreshToken);
   }
 }

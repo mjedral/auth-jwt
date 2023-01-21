@@ -12,7 +12,7 @@ export declare class AuthService {
     getTokens(userId: number, email: string): Promise<Tokens>;
     signupLocal(dto: AuthDto): Promise<Tokens>;
     updateRefreshTokenHash(userId: number, rt: string): Promise<void>;
-    signinLocal(): void;
-    logout(): void;
-    refreshTokens(): void;
+    signinLocal(dto: AuthDto): Promise<Tokens>;
+    logout(userId: number): Promise<void>;
+    refreshTokens(userId: number, rt: string): Promise<Tokens>;
 }
